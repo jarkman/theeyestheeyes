@@ -1,0 +1,28 @@
+
+
+Work items for theeyestheeyes
+==============================
+
+R - try 4-bit for speed
+R - fix protocol startup for reliability and reset
+R - do cheap smooth servo motion
+R - build skull demo rig with x & y for PMS demo
+
+B - de-speckle
+B - blob detect
+B - motion detect
+
+More motion detection cleverness if it is required
+
+Simple eye kinematics from motion detection
+Eye personalities
+mbed-to-arduino protocol
+arduino eye driver code
+arduino eye driver hardware
+
+physical case & mount for camera & mbed
+power supply - eye drivers, mbed & camera
+
+Docs:
+Writeup in google code to explain the story
+Handout for the day

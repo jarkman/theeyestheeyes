@@ -64,7 +64,7 @@ void Frame::releaseFrame( Frame **frame )
 	for( int f = 0; f < MAX_FRAMES; f ++ )
 		if( m_frames[f] == *frame )
 		{
-			m_frames[f]->m_deleted = TRUE;
+			m_frames[f]->m_deleted = true;
 			*frame = NULL;
 			return;
 		}
@@ -91,7 +91,7 @@ void Frame::init( uint8_t pixelFormat, uint16_t width, uint16_t height, uint32_t
 	m_width = width;
 	m_height = height;
 	m_frameSize = frameSize;
-	m_deleted = FALSE;
+	m_deleted = false;
 
 	m_bpp = 1; // for now
 

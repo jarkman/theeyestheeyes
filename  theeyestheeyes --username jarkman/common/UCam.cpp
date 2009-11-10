@@ -37,13 +37,12 @@ void UCamInit() {
 
 void UCamGetJpeg()
 {
-	ucam.doConfig( UCAM_COLOUR_JPEG, UCAM_RAW_SIZE_160x120, UCAM_JPEG_SIZE_640x480 ); 
+	ucam.doConfig( false, UCAM_COLOUR_JPEG, UCAM_JPEG_SIZE_640x480 ); 
 
 
     uint8_t picType = UCAM_PIC_TYPE_JPEG_PREVIEW;
     
-    if( picType == UCAM_PIC_TYPE_SNAPSHOT )
-        ucam.doSnapshot( UCAM_SNAPSHOT_JPEG );
+
         
 	ucam.doGetJpegPictureToFile( picType, "C:/mbed/out.jpg" );
     
@@ -51,52 +50,33 @@ void UCamGetJpeg()
 
 Frame* UCamGetRaw( )
 {
-    ucam.doConfig( UCAM_COLOUR_8_BIT_GREY, UCAM_RAW_SIZE_80x60, UCAM_JPEG_SIZE_640x480 ); 
-	// also see doGetRawPictureToBuffer for related values that have to stay in sync 
-
-    uint8_t picType = UCAM_PIC_TYPE_RAW_PREVIEW;
-    
-    if( picType == UCAM_PIC_TYPE_SNAPSHOT )
-        ucam.doSnapshot( UCAM_SNAPSHOT_RAW );
+    ucam.doConfig( true, UCAM_COLOUR_8_BIT_GREY, UCAM_RAW_SIZE_80x60); 
         
-	return ucam.doGetRawPictureToBuffer( picType );
+	return ucam.doGetRawPictureToBuffer( UCAM_PIC_TYPE_RAW_PREVIEW ); // returns a frame which the caller must release
     
 }
 
 Frame* UCamGetDiff( )
 {
-    ucam.doConfig( UCAM_COLOUR_8_BIT_GREY, UCAM_RAW_SIZE_80x60, UCAM_JPEG_SIZE_640x480 ); 
-	// also see doGetRawPictureToBuffer for related values that have to stay in sync 
-
-
-
-    uint8_t picType = UCAM_PIC_TYPE_RAW_PREVIEW;
+    ucam.doConfig( true, UCAM_COLOUR_8_BIT_GREY, UCAM_RAW_SIZE_80x60 ); 
     
-    if( picType == UCAM_PIC_TYPE_SNAPSHOT )
-        ucam.doSnapshot( UCAM_SNAPSHOT_RAW );
-        
-	Frame *frame = ucam.doGetRawPictureToBuffer( picType );
+	Frame *frame = ucam.doGetRawPictureToBuffer( UCAM_PIC_TYPE_RAW_PREVIEW );
 
-	motionFinder->processFrame( frame );
+	motionFinder->processFrame( frame );  // returns a frame which the caller must *not* release
 
-	return motionFinder->m_resultFrame;
+	return motionFinder->m_resultFrame;  
     
 }
 
 Frame* UCamResetDiff( )
 {
-    ucam.doConfig( UCAM_COLOUR_8_BIT_GREY, UCAM_RAW_SIZE_80x60, UCAM_JPEG_SIZE_640x480 ); 
+    ucam.doConfig( true, UCAM_COLOUR_8_BIT_GREY, UCAM_RAW_SIZE_80x60 ); 
+  
+	Frame *frame = ucam.doGetRawPictureToBuffer( UCAM_PIC_TYPE_RAW_PREVIEW );
 
-    uint8_t picType = UCAM_PIC_TYPE_RAW_PREVIEW;
-    
-    if( picType == UCAM_PIC_TYPE_SNAPSHOT )
-        ucam.doSnapshot( UCAM_SNAPSHOT_RAW );
-        
-	Frame *frame = ucam.doGetRawPictureToBuffer( picType );
+	motionFinder->newBackground( frame ); 
 
-	motionFinder->newBackground( frame );
-
-	return motionFinder->m_resultFrame;
+	return motionFinder->m_resultFrame; // returns a frame which the caller must *not* release
     
 }
 
@@ -134,11 +114,95 @@ void UCam::doStartup()
 	 pcSerial.printf("doStartup finished\r\n");
 }
 
-void UCam::doConfig( uint8_t colourType, uint8_t rawSize, uint8_t jpegSize )
+void UCam::doConfig( bool raw, uint8_t colourType, uint8_t size )
 {   
-     myled2 = 1;
+    myled2 = 1;
 
-    
+	m_colourType = colourType;
+	// defaults
+	uint8_t rawSize = UCAM_RAW_SIZE_80x60;
+	uint8_t jpegSize = UCAM_JPEG_SIZE_80x64;
+
+  
+	if( raw )
+	{
+		switch( size )
+		{
+			// Sizes for raw images
+		case UCAM_RAW_SIZE_80x60:
+			rawSize = size;
+			m_width = 80;
+			m_height = 60;
+			break;
+
+		case UCAM_RAW_SIZE_160x120:
+			rawSize = size;
+			m_width = 160;
+			m_height = 120;
+			break;
+
+		case UCAM_RAW_SIZE_320x240:
+			rawSize = size;
+			m_width = 320;
+			m_height = 240;
+			break;
+
+		case UCAM_RAW_SIZE_640x480:
+			rawSize = size;
+			m_width = 640;
+			m_height = 480;
+			break;
+
+		case UCAM_RAW_SIZE_128x128:
+			rawSize = size;
+			m_width = 128;
+			m_height = 128;
+			break;
+
+		case UCAM_RAW_SIZE_128x96:
+		default:
+			rawSize = size;
+			m_width = 128;
+			m_height = 96;
+			break;
+		}
+	}
+	else
+	{
+		// not raw - must be jpeg
+		switch( size )
+		{
+	
+
+		case UCAM_JPEG_SIZE_80x64:
+			jpegSize = size;
+			m_width = 80;
+			m_height = 64;
+			break;
+
+		case UCAM_JPEG_SIZE_160x128:
+			jpegSize = size;
+			m_width = 160;
+			m_height = 128;
+			break;
+
+		case UCAM_JPEG_SIZE_320x240:
+			jpegSize = size;
+			m_width = 320;
+			m_height = 240;
+			break;
+
+		case UCAM_JPEG_SIZE_640x480:
+		default:
+			jpegSize = size;
+			m_width = 640;
+			m_height = 480;
+			break;
+
+		}
+	}
+
+
     // pcSerial.printf("sending INITIAL\r\n");
 
     doCommand( UCAM_INITIAL, 0x00, 
@@ -160,6 +224,51 @@ void UCam::doConfig( uint8_t colourType, uint8_t rawSize, uint8_t jpegSize )
 
   myled2 = 0;
 }
+
+Frame* UCam::doGetRawPictureToBuffer( uint8_t pictureType )
+{
+    if( pictureType == UCAM_PIC_TYPE_SNAPSHOT )
+        ucam.doSnapshot( UCAM_SNAPSHOT_RAW );
+
+     pcSerial.printf("sending get picture\r\n");
+     
+     myled3 = 1;
+
+    doCommand( UCAM_GET_PICTURE,   pictureType, 0x00, 0x00, 0x00 );  
+    
+    pcSerial.printf("sent get_picture\r\n");
+        
+    uint32_t totalBytes = readData();
+
+	Frame *frame;
+	Frame::allocFrame( &frame, m_colourType, m_width, m_height, totalBytes );
+
+	uint8_t *rawBuffer = frame->m_pixels;
+
+	
+
+    // pcSerial.printf("totalBytes is %d bytes\r\n", (int) totalBytes );
+
+    pcSerial.printf("reading...\r\n");
+    uint32_t actuallyRead = readBytes( rawBuffer, totalBytes );
+
+	pcSerial.printf("...read\r\n");
+
+	sendAckForRawData();
+
+	if( actuallyRead < totalBytes )
+	{
+	    pcSerial.printf("Not enough bytes - %d  < %d \r\n", (int) actuallyRead, (int) totalBytes );
+		return NULL;
+	}
+
+    
+     pcSerial.printf("Done!\r\n");
+     
+    myled3 = 0;
+	
+    return frame;
+ }
 
 
 int UCam::doConnect()
@@ -337,51 +446,13 @@ int UCam::doSnapshot( uint8_t snapshotType )
     return doCommand( UCAM_SNAPSHOT, snapshotType, 0x00, 0x00, 0x00 ); 
 }
 
-Frame* UCam::doGetRawPictureToBuffer( uint8_t pictureType )
-{
 
-     pcSerial.printf("sending get picture\r\n");
-     
-     myled3 = 1;
-
-    doCommand( UCAM_GET_PICTURE,   pictureType, 0x00, 0x00, 0x00 );  
-    
-    pcSerial.printf("sent get_picture\r\n");
-        
-    uint32_t totalBytes = readData();
-
-	Frame *frame;
-	Frame::allocFrame( &frame, UCAM_COLOUR_8_BIT_GREY, 80, 60, totalBytes );
-
-	uint8_t *rawBuffer = frame->m_pixels;
-
-	
-
-    // pcSerial.printf("totalBytes is %d bytes\r\n", (int) totalBytes );
-
-    pcSerial.printf("reading...\r\n");
-    uint32_t actuallyRead = readBytes( rawBuffer, totalBytes );
-
-	pcSerial.printf("...read\r\n");
-
-	sendAckForRawData();
-
-	if( actuallyRead < totalBytes )
-	{
-	    pcSerial.printf("Not enough bytes - %d  < %d \r\n", (int) actuallyRead, (int) totalBytes );
-		return NULL;
-	}
-
-    
-     pcSerial.printf("Done!\r\n");
-     
-    myled3 = 0;
-	
-    return frame;
- }
 
 int UCam::doGetJpegPictureToFile( uint8_t pictureType, char*filename )
 {
+	if( pictureType == UCAM_PIC_TYPE_SNAPSHOT )
+        ucam.doSnapshot( UCAM_SNAPSHOT_JPEG );
+
     FILE *jpgFile = fopen(filename, FILE_WRITE_STRING); // "w" or "wb" for Windows
     
     if( jpgFile != NULL )

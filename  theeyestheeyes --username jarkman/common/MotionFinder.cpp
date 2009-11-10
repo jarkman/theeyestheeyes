@@ -7,6 +7,7 @@
 extern Logger pcSerial;
 // Motion detection for the mbed
 
+
 MotionFinder::MotionFinder()
 {
 	m_backgroundFrame = NULL;
@@ -66,7 +67,7 @@ void MotionFinder::processFrame( Frame *frame )
 			sumN ++;
 
 			//and make the background a little bit more like this pixel, to adjust to slow changes in lighting
-			m_backgroundFrame->setPixel( i, ( (pb*15) + pf) >> 4 );
+			//m_backgroundFrame->setPixel( i, ( (pb*15) + pf) >> 4 );
 
 			
 		}
@@ -84,13 +85,24 @@ void MotionFinder::processFrame( Frame *frame )
 	uint32_t cogX = 0;
 	uint32_t cogY = 0;
 
-	if( sumN > 0 )
+    uint32_t percentage = (sumN * 100) / frame->m_numPixels;
+    
+    pcSerial.printf("\r\n%d %% changed pixels\r\n", (int) percentage);
+    
+    if( percentage < 5 ) // no real target, no COG
+    {
+        pcSerial.printf("No COG\r\n");
+    }
+	else if( sumN > 0 )
 	{
 		cogX = sumX / sumN;
 		cogY = sumY / sumN;
+
+        		
+	    pcSerial.printf("COG is %d, %d\r\n", (int) cogX, (int) cogY);
+
 	}
 
-    pcSerial.printf("\r\nCOG is %d, %d\r\n", (int) cogX, (int) cogY);
 
 	Frame::releaseFrame( &frame );
 

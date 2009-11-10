@@ -5,6 +5,7 @@
 #include "Frame.h"
 #include "MotionFinder.h"
 
+
 // ucam protocol implementation for mbed
 
 
@@ -22,6 +23,7 @@ DigitalOut myled4(LED4);
 
 //LocalFileSystem local("local");
 UCam ucam(p13, p14);
+Timer t;
 
 MotionFinder *motionFinder = NULL;
 
@@ -91,14 +93,21 @@ void UCam::doStartup()
 {
     pcSerial.printf("\r\n\n\nucam waiting\r\n");
     
-    wait(5);
+    wait(5); //delay to give time to get the terminal emulator up & running
           
     pcSerial.printf("\r\n\n\nucam running!\r\n");
     
 	// When running on desktop over USB serial cable, this baud rate seems to need to match the rate set in the USB device configuration (via Control Panel/System/Device Manager/Properties/Advanced)
-    camSerial.baud(14400);  // lowest supported rate
+#ifdef ON_DESKTOP
+	camSerial.baud(14400);  // lowest supported rate
     
-    //camSerial.baud(115200);    // highest supported rate
+#else
+	//camSerial.baud(14400);  // lowest supported rate
+    
+    //camSerial.baud(57600);   
+    
+    camSerial.baud(115200);    // highest supported rate
+#endif
 
      myled1 = 1;
      
@@ -249,7 +258,7 @@ Frame* UCam::doGetRawPictureToBuffer( uint8_t pictureType )
 
     // pcSerial.printf("totalBytes is %d bytes\r\n", (int) totalBytes );
 
-    pcSerial.printf("reading...\r\n");
+   // pcSerial.printf("reading...\r\n");
     uint32_t actuallyRead = readBytes( rawBuffer, totalBytes );
 
 	pcSerial.printf("...read\r\n");
@@ -342,18 +351,21 @@ void UCam::sendAckForRawData( )
 int UCam::readAck( uint16_t command )
 {
     uint8_t a = 0;
-
-    while( camSerial.readable())
+    uint16_t n = 0;
+    
+    while( n < 100 || camSerial.readable())
     {
          a = camSerial.getc();
          if( a == 0xAA )
          {
-           // pcSerial.printf("ack read AA\r\n");
+            // pcSerial.printf("ack read AA\r\n");
 
              break;
          }
          
-          pcSerial.printf("ack skipped %x\r\n", (int) a);
+         n++;
+         
+         pcSerial.printf("ack skipped %x\r\n", (int) a);
     }
     
     uint8_t bytes[5];
@@ -362,9 +374,9 @@ int UCam::readAck( uint16_t command )
     
     pcSerial.printf("ack read %x  %x %x %x %x %x \r\n", (int) a, (int) bytes[0], (int) bytes[1], (int) bytes[2], (int) bytes[3], (int) bytes[4] );
    
-    if( bytes[1] != (command & 0xff))
+    if( a != 0xaa ||  bytes[1] != (command & 0xff))
     {
-        pcSerial.printf("ack is for wrong command!\r\n");
+        pcSerial.printf("ack is for wrong command! Should be for %x\r\n", (int) command);
         return 0;
     }
 
@@ -424,12 +436,14 @@ uint16_t UCam::timedGetc()
 {
     //return camSerial.getc();
 
-    Timer t;
+   
     t.start();
     do
     {
         if( camSerial.readable())
             return camSerial.getc();
+            
+        wait_ms(1);
      }
      while( t.read_ms() < 1000 );
      
@@ -587,14 +601,17 @@ uint32_t UCam::readData()
     
     uint32_t totalSize = ( bytes[5]<<16 ) | ( bytes[4]<<8 ) | ( bytes[3] );
 
-     // check content - AA 0A tt nn nn nn - tt is the image type, nn tells us the image size
-    pcSerial.printf("readData totalSize %d - read %x %x %x %x %x %x \r\n", (int) totalSize, (int) bytes[0], (int) bytes[1], (int) bytes[2], (int) bytes[3], (int) bytes[4], (int) bytes[5] );
+    // check content - AA 0A tt nn nn nn - tt is the image type, nn tells us the image size
 
-
-    if( bytes[0] != 0xAA )
+    // only log fail cases here, otherwise the logging slows us down
+    // and we miss the image data, which is coming along already
+    
+    if( bytes[0] != 0xAA || bytes[1] != 0x0A)
     {
-     pcSerial.printf("readData failed\r\n");
-     return 0;
+        pcSerial.printf("readData totalSize %d - read %x %x %x %x %x %x \r\n", (int) totalSize, (int) bytes[0], (int) bytes[1], (int) bytes[2], (int) bytes[3], (int) bytes[4], (int) bytes[5] );
+
+         pcSerial.printf("readData failed\r\n");
+         return 0;
     }
         
     return totalSize;

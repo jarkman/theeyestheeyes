@@ -12,6 +12,11 @@ void wait( float secs )
 	Sleep( (int) (secs * 1000.0));
 }
 
+void wait_ms(int ms)
+{
+	Sleep( ms );
+}
+
 void Timer::start()
 {
 	startTime = time(NULL);

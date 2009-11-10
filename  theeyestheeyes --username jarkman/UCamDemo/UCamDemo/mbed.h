@@ -1,6 +1,7 @@
 
 // Definitions to emulate mbed libraries in an MFC environment
 
+
 typedef unsigned char uint8_t;
 
 
@@ -61,6 +62,8 @@ public:
 	time_t startTime;
 };
 
+
+
 #define LED1 0
 #define LED2 1
 #define LED3 2
@@ -76,3 +79,6 @@ public:
 #define FILE_WRITE_STRING "wb"
 
 void wait( float secs );
+void wait_ms( int ms );
+
+#define ON_DESKTOP

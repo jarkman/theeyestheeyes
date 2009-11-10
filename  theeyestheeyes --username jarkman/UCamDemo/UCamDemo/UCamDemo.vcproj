@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Documents and Settings\Richard Sewell\My Documents\mbed\theeyestheeyes\common&quot;;&quot;C:\Documents and Settings\Richard Sewell\My Documents\mbed\theeyestheeyes\UCamDemo\UCamDemo&quot;"
+				AdditionalIncludeDirectories="C:\mbed\theeyestheeyes\common;C:\mbed\theeyestheeyes\UCamDemo\UCamDemo"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"

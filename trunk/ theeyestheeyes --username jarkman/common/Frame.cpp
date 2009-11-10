@@ -11,7 +11,7 @@ Frame::Frame() // don't construct Frame yourself - call allocFrame instead
 	m_width = 0;
 	m_height = 0;
 	m_pixelFormat = 0;
-	m_deleted = TRUE;
+	m_deleted = true;
 	m_numPixels = 0;
 }
 

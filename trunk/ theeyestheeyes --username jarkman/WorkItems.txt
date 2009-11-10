@@ -5,6 +5,7 @@ Work items for theeyestheeyes
 
 R - try 4-bit for speed
 R - fix protocol startup for reliability and reset
+R - get test images & provide replay works
 R - do cheap smooth servo motion
 R - build skull demo rig with x & y for PMS demo
 

@@ -39,6 +39,6 @@ public:
 	uint32_t m_frameSize;
 	uint8_t m_bpp;
 	uint32_t m_numPixels;
-	boolean m_deleted;
+	bool m_deleted;
 
 };

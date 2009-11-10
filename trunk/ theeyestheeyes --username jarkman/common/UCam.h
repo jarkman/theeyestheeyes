@@ -59,6 +59,10 @@
 #define UCAM_SNAPSHOT_JPEG 0x00
 #define UCAM_SNAPSHOT_RAW 0x01
 
+#ifndef FILE_WRITE_STRING
+#define FILE_WRITE_STRING "w" // value for mbed - will be defined earlier on Win
+#endif
+
 class Frame;
 
 class UCam
@@ -68,7 +72,7 @@ public:
 UCam(PinName tx, PinName rx);
 
 void doStartup();
-void doConfig( uint8_t colourType, uint8_t rawSize, uint8_t jpegSize );
+void doConfig( bool raw, uint8_t colourType, uint8_t size );
 
 Frame *doGetRawPictureToBuffer( uint8_t picType );
 int doGetJpegPictureToFile( uint8_t picType, char* filename );
@@ -81,7 +85,7 @@ int sendCommand( int command, int p1, int p2, int p3, int p4 );
 int doCommand( int command, int p1, int p2, int p3, int p4 );
 void sendAck();
 void sendAckForPackage( uint16_t p);
-void UCam::sendAckForRawData( ) ;
+void sendAckForRawData( ) ;
 int readAck( uint16_t command );
 int readSync();
 uint32_t readData();
@@ -97,6 +101,9 @@ private:
 uint8_t packageBody[512];
 uint8_t lastCommand;
 Serial camSerial;
+uint8_t m_colourType;
+uint16_t m_width;
+uint16_t m_height;
 
 
 

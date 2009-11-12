@@ -14,12 +14,16 @@
 
 class Frame
 {
-public:
+private:
 	Frame();
 	~Frame();
 	void init( uint8_t pixelFormat, uint16_t width, uint16_t height, uint32_t frameSize );
+
+public:
 	uint16_t getPixel( uint32_t p );
 	void setPixel( uint32_t p, uint16_t  );
+	void writeToFile( char *filename );
+	static void readFromFile( char *filename, Frame **frame );
 
 
 	// Use these methods to manage a pool of frames to avoid fragmentation
@@ -37,8 +41,9 @@ public:
 	uint16_t m_height;
 	uint8_t m_pixelFormat;
 	uint32_t m_frameSize;
-	uint8_t m_bpp;
+	uint8_t m_bitsPerPixel;
 	uint32_t m_numPixels;
 	bool m_deleted;
+	bool m_bad;
 
 };

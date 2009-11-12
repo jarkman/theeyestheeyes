@@ -89,6 +89,8 @@ BEGIN_MESSAGE_MAP(CUCamDemoDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON2, &CUCamDemoDlg::OnBnClickedButton2)
 	ON_BN_CLICKED(IDC_BUTTON_DIFF, &CUCamDemoDlg::OnBnClickedButtonDiff)
 	ON_BN_CLICKED(IDC_BUTTONNEW_BACKGROUND, &CUCamDemoDlg::OnBnClickedButtonnewBackground)
+	ON_BN_CLICKED(IDC_BUTTON_RECORD, &CUCamDemoDlg::OnBnClickedButtonRecord)
+	ON_BN_CLICKED(IDC_BUTTON_REPLAY, &CUCamDemoDlg::OnBnClickedButtonReplay)
 END_MESSAGE_MAP()
 
 
@@ -198,13 +200,19 @@ void CUCamDemoDlg::showFrame( Frame *frame )
 {
 	Gdiplus::Bitmap *b;
 
-	uint8_t *buff = frame->m_pixels;
+	if( frame == NULL || frame->m_bad )
+		return;
 
-	uint16_t *newBuff = (uint16_t*) malloc( frame->m_frameSize * 2 );
+	
+	uint16_t *newBuff = (uint16_t*) malloc( frame->m_numPixels * 2 );
 
-	for( uint32_t i = 0; i < frame->m_frameSize; i ++) // swap byte ordering to suit Windows
+	for( uint32_t i = 0; i < frame->m_numPixels; i ++) // swap byte ordering to suit Windows
 	{
-		uint16_t fivebits = buff[i] >>3;
+		uint16_t fivebits = frame->getPixel( i );
+
+		if( frame->m_bitsPerPixel == 4 )
+			fivebits = fivebits << 1 ;
+
 		newBuff [i] = ( fivebits << 11) | ( fivebits << 6 ) | (fivebits ); // make 565 RGB from 8-bit grey
 		
 	}
@@ -238,4 +246,62 @@ void CUCamDemoDlg::OnBnClickedButtonnewBackground()
 	Frame * frame = UCamResetDiff();
 
 	showFrame( frame );
+}
+
+void CUCamDemoDlg::OnBnClickedButtonRecord()
+{
+	char filename[256] ;
+
+	for( int i = 0; i < 20; )
+	{
+		Frame * frame = UCamGetRaw();
+
+		if( frame != NULL )
+		{
+			if( ! frame->m_bad )
+			{
+				i ++ ;
+			
+				sprintf( filename, "c:\\mbed\\frame%d", i );
+
+				frame->writeToFile( filename );
+
+				
+				// now read it in to prove we can
+				Frame*readFrame = NULL;
+
+				Frame::readFromFile( filename, &readFrame );
+
+				showFrame( readFrame );
+				
+				Frame::releaseFrame( &readFrame );
+			}
+
+			Frame::releaseFrame( &frame );
+		}
+
+
+	}
+}
+
+void CUCamDemoDlg::OnBnClickedButtonReplay()
+{
+	char filename[256] ;
+
+	for( int i = 0; i < 20; i++ )
+	{
+		sprintf( filename, "c:\\mbed\\frame%d", i );
+		Frame*readFrame = NULL;
+
+		Frame::readFromFile( filename, &readFrame );
+
+		if( readFrame != NULL )
+		{
+			if( ! readFrame->m_bad )
+				showFrame( readFrame );
+
+			Frame::releaseFrame( &readFrame );
+		}
+
+	}
 }

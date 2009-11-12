@@ -16,5 +16,6 @@ public:
 
 	Frame *m_backgroundFrame;
 	Frame *m_resultFrame;
+	uint16_t m_delta;
 
 };

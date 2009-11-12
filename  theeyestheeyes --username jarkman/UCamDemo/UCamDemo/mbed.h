@@ -77,6 +77,7 @@ public:
 #define USBRX 1
 
 #define FILE_WRITE_STRING "wb"
+#define FILE_READ_STRING "rb"
 
 void wait( float secs );
 void wait_ms( int ms );

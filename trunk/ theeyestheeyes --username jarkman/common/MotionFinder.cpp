@@ -4,9 +4,12 @@
 #include "Frame.h"
 #include "MotionFinder.h"
 
+#ifndef ON_DESKTOP
 #include "Servo.h"
 
 Servo myServo (p21);
+#endif
+
 extern Logger pcSerial;
 
 // Motion detection for the mbed
@@ -38,12 +41,30 @@ void MotionFinder::newBackground( Frame *frame )
 
 void MotionFinder::processFrame( Frame *frame )
 {
+	if( frame == NULL )
+    {
+		m_resultFrame->m_bad = false;
+        return;
+    }
+
+
     if( m_backgroundFrame == NULL )
     {
         m_backgroundFrame = frame;
+
+		m_delta = 1 << (m_backgroundFrame->m_bitsPerPixel - 4); // smallest interesting change - make sure this is nonzero for 4-bit iamges!
+
         Frame::cloneFrame( &m_resultFrame, m_backgroundFrame );
+		m_resultFrame->m_bad = false;
         return;
     }
+
+	if( frame->m_numPixels != m_backgroundFrame->m_numPixels )
+    {       
+		m_resultFrame->m_bad = false;
+        return;
+    }
+
 
     uint32_t sumX = 0;
     uint32_t sumY = 0;
@@ -62,7 +83,7 @@ void MotionFinder::processFrame( Frame *frame )
         uint16_t pb = m_backgroundFrame->getPixel( i );
         uint16_t pf = frame->getPixel( i );
 
-        if( ( pf > pb && pf - pb > 10 ) || ( pf < pb && pb - pf > 10 ))
+        if( ( pf > pb && pf - pb > m_delta ) || ( pf < pb && pb - pf > m_delta ))
         {
             // different from background
             m_resultFrame->setPixel( i, pf );
@@ -107,8 +128,10 @@ void MotionFinder::processFrame( Frame *frame )
         cogX = sumX / sumN;
         cogY = sumY / sumN;
 
+		#ifndef ON_DESKTOP
         myServo = (cogX  / 80.0);
-        
+		#endif
+
         pcSerial.printf("COG is %d, %d\r\n", (int) cogX, (int) cogY);
 
     }
@@ -116,6 +139,7 @@ void MotionFinder::processFrame( Frame *frame )
 
     Frame::releaseFrame( &frame );
 
+	m_resultFrame->m_bad = false;
     return;
 }
 

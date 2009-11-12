@@ -69,41 +69,53 @@ class UCam
 {
 public:
 
-UCam(PinName tx, PinName rx);
+	UCam(PinName tx, PinName rx);
 
-void doStartup();
-void doConfig( bool raw, uint8_t colourType, uint8_t size );
+	void doStartup();
+	int doConfig( bool raw, uint8_t colourType, uint8_t imageSize );
 
-Frame *doGetRawPictureToBuffer( uint8_t picType );
-int doGetJpegPictureToFile( uint8_t picType, char* filename );
-int doSnapshot( uint8_t snapshotType );
-
-private:
-
-int doConnect();
-int sendCommand( int command, int p1, int p2, int p3, int p4 );
-int doCommand( int command, int p1, int p2, int p3, int p4 );
-void sendAck();
-void sendAckForPackage( uint16_t p);
-void sendAckForRawData( ) ;
-int readAck( uint16_t command );
-int readSync();
-uint32_t readData();
-int readBytes(uint8_t *bytes, int size );
-
-uint16_t timedGetc();
-uint16_t readUInt16();
-int readPackage( FILE *jpgFile, uint16_t targetPackage );
-
-
+	Frame *doGetRawPictureToBuffer( uint8_t picType );
+	int doGetJpegPictureToFile( uint8_t picType, char* filename );
 
 private:
-uint8_t packageBody[512];
-uint8_t lastCommand;
-Serial camSerial;
-uint8_t m_colourType;
-uint16_t m_width;
-uint16_t m_height;
+
+	int doConnect();
+	int fixConfusion();
+	void sendCommand( int command, int p1, int p2, int p3, int p4 );
+	int doCommand( int command, int p1, int p2, int p3, int p4 );
+	int doReset();
+	int doSnapshot( uint8_t snapshotType );
+
+	void sendAck();
+	void sendAckForPackage( uint16_t p);
+	void sendAckForRawData( ) ;
+	int readAckPatiently( uint16_t command );
+	int readAck( uint16_t command );
+	int readSync();
+	uint32_t readData();
+	int readBytes(uint8_t *bytes, int size );
+
+	uint16_t timedGetc();
+	uint16_t readUInt16();
+	int readPackage( FILE *jpgFile, uint16_t targetPackage );
+
+
+
+private:
+	Serial camSerial;
+	uint8_t lastCommand;
+
+	int m_confused;
+
+	uint8_t packageBody[512];
+
+	bool m_raw;
+	uint8_t m_colourType;
+	uint8_t m_imageSize;
+
+	uint8_t m_bitsPerPixel;
+	uint16_t m_width;
+	uint16_t m_height;
 
 
 

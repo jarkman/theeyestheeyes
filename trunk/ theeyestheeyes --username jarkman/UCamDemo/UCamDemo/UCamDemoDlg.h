@@ -39,4 +39,6 @@ public:
 	
 	void showFrame( Frame *frame );
 	afx_msg void OnBnClickedButtonnewBackground();
+	afx_msg void OnBnClickedButtonRecord();
+	afx_msg void OnBnClickedButtonReplay();
 };

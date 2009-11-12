@@ -22,6 +22,15 @@ MotionFinder::MotionFinder( ServoMinder *xServoMinder, ServoMinder *yServoMinder
 
 	m_xServoMinder = xServoMinder;
 	m_yServoMinder = yServoMinder;
+	
+	 m_xServoMinder->moveTo( 1.0 );
+    wait( 1 );
+    m_xServoMinder->moveTo( 0.0 );
+    wait( 1 );
+    m_yServoMinder->moveTo( 1.0 );
+    wait( 1 );
+    m_yServoMinder->moveTo( 0.0 );
+    wait( 1 );
 }
 
 	

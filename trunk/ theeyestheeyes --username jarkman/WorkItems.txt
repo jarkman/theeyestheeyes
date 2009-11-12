@@ -4,7 +4,6 @@ Work items for theeyestheeyes
 ==============================
 
 
-R - get test images & provide replay works
 R - do cheap smooth servo motion
 R - build skull demo rig with x & y for PMS demo
 

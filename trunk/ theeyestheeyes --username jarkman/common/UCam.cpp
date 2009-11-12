@@ -263,7 +263,7 @@ int UCam::fixConfusion()
 		if( doReset())
 		{
 		// re-sync 
-			if( doConnect())
+			if( doSyncs())
 			{
 
 				// re-config
@@ -348,6 +348,27 @@ Frame* UCam::doGetRawPictureToBuffer( uint8_t pictureType )
 
 int UCam::doConnect()
 {
+	while( true )
+	{
+		if( doSyncs())
+		{
+			break;
+		}
+		else
+		{
+			m_confused = true;
+			if( fixConfusion())
+				break;
+		}
+	}
+
+	return 1;
+}
+
+int UCam::doSyncs()
+{
+	int i = 0;
+
     while( true )
     {
         pcSerial.printf("sending sync\r\n");
@@ -366,6 +387,9 @@ int UCam::doConnect()
             if( readAckPatiently(UCAM_SYNC))
                 break;
         }
+
+		if( i ++ > 10 )
+			return 0;
         
     }
     
@@ -403,8 +427,10 @@ int UCam::doCommand( int command, int p1, int p2, int p3, int p4 )
 int UCam::doReset()
 {
     return doCommand( UCAM_RESET, 
-						0x01,		// 0x01 resets state machines, does not reboot camera
-						0x00, 0x00, 0x00 ); 
+						0x00,		// 0x00 reboots camera
+						//0x01,		// 0x01 resets state machines, does not reboot camera
+						0x00, 0x00, 
+						0xFF );		// FF causes a 'special reset' 
 }
 
 int UCam::doSnapshot( uint8_t snapshotType )

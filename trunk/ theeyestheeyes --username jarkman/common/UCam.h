@@ -84,6 +84,7 @@ private:
 	void sendCommand( int command, int p1, int p2, int p3, int p4 );
 	int doCommand( int command, int p1, int p2, int p3, int p4 );
 	int doReset();
+	int doSyncs();
 	int doSnapshot( uint8_t snapshotType );
 
 	void sendAck();

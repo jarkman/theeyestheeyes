@@ -3,8 +3,9 @@
 #include "mbed.h"
 #include "ucam.h"
 #include "Frame.h"
+#include "ServoMinder.h"
 #include "MotionFinder.h"
-
+#include "Servo.h"
 
 // ucam protocol implementation for mbed
 
@@ -25,6 +26,10 @@ DigitalOut myled4(LED4);
 UCam ucam(p13, p14);
 Timer t;
 
+
+Servo xServo (p21);
+Servo yServo (p22);
+
 MotionFinder *motionFinder = NULL;
 
 
@@ -33,7 +38,7 @@ void UCamInit() {
    
     ucam.doStartup();
 	Frame::initFrames();
-	motionFinder = new MotionFinder();
+	motionFinder = new MotionFinder( new ServoMinder(&xServo), new ServoMinder(&yServo) );
     
 }
 

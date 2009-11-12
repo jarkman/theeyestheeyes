@@ -2,23 +2,26 @@
 
 #include "mbed.h"
 #include "Frame.h"
+#include "ServoMinder.h"
 #include "MotionFinder.h"
 
-#ifndef ON_DESKTOP
-#include "Servo.h"
 
-Servo myServo (p21);
-#endif
+#include "ServoMinder.h"
+
+
 
 extern Logger pcSerial;
 
 // Motion detection for the mbed
 
 
-MotionFinder::MotionFinder()
+MotionFinder::MotionFinder( ServoMinder *xServoMinder, ServoMinder *yServoMinder )
 {
 	m_backgroundFrame = NULL;
 	m_resultFrame = NULL;
+
+	m_xServoMinder = xServoMinder;
+	m_yServoMinder = yServoMinder;
 }
 
 	
@@ -53,6 +56,9 @@ void MotionFinder::processFrame( Frame *frame )
         m_backgroundFrame = frame;
 
 		m_delta = 1 << (m_backgroundFrame->m_bitsPerPixel - 4); // smallest interesting change - make sure this is nonzero for 4-bit iamges!
+
+		if( m_delta < 2 )
+			m_delta = 2;
 
         Frame::cloneFrame( &m_resultFrame, m_backgroundFrame );
 		m_resultFrame->m_bad = false;
@@ -117,9 +123,9 @@ void MotionFinder::processFrame( Frame *frame )
 
     uint32_t percentage = (sumN * 100) / frame->m_numPixels;
     
-    pcSerial.printf("\r\n%d %% changed pixels\r\n", (int) percentage);
+    pcSerial.printf("\r\n%d percent changed pixels\r\n", (int) percentage);
     
-    if( percentage < 5 ) // no real target, no COG
+    if( percentage < 3 ) // no real target, no COG
     {
         pcSerial.printf("No COG\r\n");
     }
@@ -128,9 +134,9 @@ void MotionFinder::processFrame( Frame *frame )
         cogX = sumX / sumN;
         cogY = sumY / sumN;
 
-		#ifndef ON_DESKTOP
-        myServo = (cogX  / 80.0);
-		#endif
+		m_xServoMinder->moveTo( (float)cogX  / frame->m_width);
+		m_yServoMinder->moveTo( (float)cogY  / frame->m_width); // use the larger dimension so x & y get the same scaling
+
 
         pcSerial.printf("COG is %d, %d\r\n", (int) cogX, (int) cogY);
 

@@ -236,9 +236,13 @@ void CUCamDemoDlg::showFrame( Frame *frame )
 
 void CUCamDemoDlg::OnBnClickedButtonDiff()
 {
-	Frame * frame = UCamGetDiff();
+	
 
-	showFrame( frame );
+	for( int i = 0; i < 20; )
+	{
+		Frame * frame = UCamGetDiff();
+		showFrame( frame );
+	}
 }
 
 void CUCamDemoDlg::OnBnClickedButtonnewBackground()

@@ -62,7 +62,13 @@ public:
 	time_t startTime;
 };
 
-
+class Ticker
+{
+public:
+	template<typename T> void attach(	T 	*	tptr,
+	void 		(T::*mptr)(void),
+	float 		t	) {};
+};
 
 #define LED1 0
 #define LED2 1
@@ -72,6 +78,8 @@ public:
 
 #define p13 13
 #define p14 14
+#define p21 21
+#define p22 22
 
 #define USBTX 0
 #define USBRX 1

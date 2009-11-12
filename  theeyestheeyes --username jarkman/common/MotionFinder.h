@@ -1,12 +1,13 @@
-
+#pragma once
 // Class to detect motion in a series of frames
 
 class Frame;
 
+
 class MotionFinder
 {
 public:
-	MotionFinder( );
+	MotionFinder( ServoMinder *xServoMinder, ServoMinder *yServoMinder  );
 
 	void processFrame( Frame *frame );
 	void newBackground( Frame *frame );
@@ -17,5 +18,8 @@ public:
 	Frame *m_backgroundFrame;
 	Frame *m_resultFrame;
 	uint16_t m_delta;
+
+	ServoMinder *m_xServoMinder;
+	ServoMinder *m_yServoMinder;
 
 };

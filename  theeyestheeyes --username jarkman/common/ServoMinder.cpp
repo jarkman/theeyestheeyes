@@ -3,15 +3,18 @@
 #include "mbed.h"
 #include "ServoMinder.h"
 
+
+extern Logger pcSerial;
+
 ServoMinder::ServoMinder( Servo *servo )
 {
 	m_servo = servo;
 	m_target = 0;
 	
 
-	m_tickTime = 0.1;
+	m_tickTime = 0.02;
 
-	setSpeed( 2 ); // time in seconds for full travel
+	setSpeed( 0.5 ); // time in seconds for full travel
 
 	m_ticker.attach( this, &ServoMinder::tick, m_tickTime );
 }
@@ -19,6 +22,8 @@ ServoMinder::ServoMinder( Servo *servo )
 void ServoMinder::moveTo( float target )
 {
 	m_target = target;
+	
+	
 }
 
 void ServoMinder::setSpeed( float speed )
@@ -34,16 +39,23 @@ void ServoMinder::tick()
 	if( pos < m_target  )
 	{
 		pos += m_delta;
-		if( pos > m_delta )
-			pos = m_delta;
+		if( pos > m_target )
+			pos = m_target;
+		
+		// can't trace in here - breaks the cam protocol
+		//pcSerial.printf("servo to %f\r\n", pos);	
+		m_servo->write( pos );
 	}
 	else if( pos > m_target )
 	{
 		pos -= m_delta;
 		if( pos < m_target )
 			pos = m_target;
+			
+		//pcSerial.printf("servo to %f\r\n", pos);	
+		m_servo->write( pos );
 	}
 
-	m_servo->write( pos );
+	
 }
 

@@ -99,6 +99,7 @@ void UCam::doStartup()
 {
     pcSerial.printf("\r\n\n\nucam waiting\r\n");
     
+   
     wait(5); //delay to give time to get the terminal emulator up & running
           
     pcSerial.printf("\r\n\n\nucam running!\r\n");
@@ -110,9 +111,9 @@ void UCam::doStartup()
 #else
 	//camSerial.baud(14400);  // lowest supported rate
     
-    //camSerial.baud(57600);   
+    camSerial.baud(57600);   
     
-    camSerial.baud(115200);    // highest supported rate
+    //camSerial.baud(115200);    // highest supported rate
 #endif
 
      myled1 = 1;
@@ -267,6 +268,7 @@ int UCam::fixConfusion()
 
 		if( doReset())
 		{
+		    wait( 0.5 );
 		// re-sync 
 			if( doSyncs())
 			{
@@ -312,26 +314,24 @@ Frame* UCam::doGetRawPictureToBuffer( uint8_t pictureType )
     if( ! doCommand( UCAM_GET_PICTURE,   pictureType, 0x00, 0x00, 0x00 ))
 		return 0;
     
-    pcSerial.printf("sent get_picture\r\n");
-        
+         
     uint32_t totalBytes = readData();
 
 	if( totalBytes < 1 )
+	{
+    	 pcSerial.printf("totalBytes < 1 - giving up\r\n");
 		return 0;
-
+    }
+    
 	Frame *frame;
 	Frame::allocFrame( &frame, m_colourType, m_width, m_height, totalBytes );
 
 	uint8_t *rawBuffer = frame->m_pixels;
 
-	
-
-    // pcSerial.printf("totalBytes is %d bytes\r\n", (int) totalBytes );
-
-   // pcSerial.printf("reading...\r\n");
+    
     uint32_t actuallyRead = readBytes( rawBuffer, totalBytes );
 
-	pcSerial.printf("...read\r\n");
+	////pcSerial.printf("...read\r\n");
 
 	sendAckForRawData();
 
@@ -343,7 +343,7 @@ Frame* UCam::doGetRawPictureToBuffer( uint8_t pictureType )
 	}
 
     
-     pcSerial.printf("Done!\r\n");
+    pcSerial.printf("Done!\r\n");
      
     myled3 = 0;
 	
@@ -465,11 +465,13 @@ int UCam::readAck( uint16_t command )
     
     readBytes( bytes, 6);
     
-    pcSerial.printf("ack read %x  %x %x %x %x %x \r\n", (int) bytes[0], (int) bytes[1], (int) bytes[2], (int) bytes[3], (int) bytes[4], bytes[5] );
+   // pcSerial.printf("ack read %x  %x %x %x %x %x \r\n", (int) bytes[0], (int) bytes[1], (int) bytes[2], (int) bytes[3], (int) bytes[4], bytes[5] );
    
     if( bytes[0] != 0xaa || bytes[1] != 0x0e || bytes[2] != (command & 0xff))
     {
-        pcSerial.printf("ack is for wrong command! Should be for %x\r\n", (int) command);
+        pcSerial.printf("ack read %x  %x %x %x %x %x \r\n", (int) bytes[0], (int) bytes[1], (int) bytes[2], (int) bytes[3], (int) bytes[4], bytes[5] );
+   
+       pcSerial.printf("ack is for wrong command! Should be for %x\r\n", (int) command);
 		m_confused = 1;
         return 0;
     }

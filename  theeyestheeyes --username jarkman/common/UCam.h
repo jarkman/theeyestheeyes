@@ -61,6 +61,7 @@
 
 #ifndef FILE_WRITE_STRING
 #define FILE_WRITE_STRING "w" // value for mbed - will be defined earlier on Win
+#define FILE_READ_STRING "r"
 #endif
 
 class Frame;

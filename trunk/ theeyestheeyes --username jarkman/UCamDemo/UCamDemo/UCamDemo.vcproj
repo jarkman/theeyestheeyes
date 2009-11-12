@@ -239,6 +239,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\common\ServoMinder.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\common\UCam.cpp"
 					>
 				</File>
@@ -262,6 +266,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Servo.h"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.h"
 				>
 			</File>
@@ -282,6 +290,10 @@
 				</File>
 				<File
 					RelativePath="..\..\common\MotionFinder.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\common\ServoMinder.h"
 					>
 				</File>
 				<File

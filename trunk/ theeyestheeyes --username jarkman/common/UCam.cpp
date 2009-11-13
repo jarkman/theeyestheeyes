@@ -37,21 +37,21 @@ MotionFinder *motionFinder = NULL;
 void UCamInit() {
    
     ucam.doStartup();
-	Frame::initFrames();
-	motionFinder = new MotionFinder( new ServoMinder(&xServo), new ServoMinder(&yServo) );
+    Frame::initFrames();
+    motionFinder = new MotionFinder( new ServoMinder(&xServo), new ServoMinder(&yServo) );
     
 }
 
 void UCamGetJpeg()
 {
-	ucam.doConfig( false, UCAM_COLOUR_JPEG, UCAM_JPEG_SIZE_640x480 ); 
+    ucam.doConfig( false, UCAM_COLOUR_JPEG, UCAM_JPEG_SIZE_640x480 ); 
 
 
     uint8_t picType = UCAM_PIC_TYPE_JPEG_PREVIEW;
     
 
         
-	ucam.doGetJpegPictureToFile( picType, "C:/mbed/out.jpg" );
+    ucam.doGetJpegPictureToFile( picType, "C:/mbed/out.jpg" );
     
 }
 
@@ -59,7 +59,7 @@ Frame* UCamGetRaw( )
 {
     ucam.doConfig( true, UCAM_COLOUR_4_BIT_GREY, UCAM_RAW_SIZE_80x60); 
         
-	return ucam.doGetRawPictureToBuffer( UCAM_PIC_TYPE_RAW_PREVIEW ); // returns a frame which the caller must release
+    return ucam.doGetRawPictureToBuffer( UCAM_PIC_TYPE_RAW_PREVIEW ); // returns a frame which the caller must release
     
 }
 
@@ -67,11 +67,11 @@ Frame* UCamGetDiff( )
 {
     ucam.doConfig( true, UCAM_COLOUR_4_BIT_GREY, UCAM_RAW_SIZE_80x60 ); 
     
-	Frame *frame = ucam.doGetRawPictureToBuffer( UCAM_PIC_TYPE_RAW_PREVIEW );
+    Frame *frame = ucam.doGetRawPictureToBuffer( UCAM_PIC_TYPE_RAW_PREVIEW );
 
-	motionFinder->processFrame( frame );  // returns a frame which the caller must *not* release
+    motionFinder->processFrame( frame );  // returns a frame which the caller must *not* release
 
-	return motionFinder->m_resultFrame;  
+    return motionFinder->m_resultFrame;  
     
 }
 
@@ -79,19 +79,19 @@ Frame* UCamResetDiff( )
 {
     ucam.doConfig( true, UCAM_COLOUR_4_BIT_GREY, UCAM_RAW_SIZE_80x60 ); 
   
-	Frame *frame = ucam.doGetRawPictureToBuffer( UCAM_PIC_TYPE_RAW_PREVIEW );
+    Frame *frame = ucam.doGetRawPictureToBuffer( UCAM_PIC_TYPE_RAW_PREVIEW );
 
-	motionFinder->newBackground( frame ); 
+    motionFinder->newBackground( frame ); 
 
-	return motionFinder->m_resultFrame; // returns a frame which the caller must *not* release
+    return motionFinder->m_resultFrame; // returns a frame which the caller must *not* release
     
 }
 
-UCam::UCam( PinName tx, PinName	rx ) : camSerial(p13, p14) // tx, rx
+UCam::UCam( PinName tx, PinName    rx ) : camSerial(p13, p14) // tx, rx
 
 {
-	lastCommand = 0;
-	m_confused = 0;
+    lastCommand = 0;
+    m_confused = 0;
 
 }
 
@@ -104,12 +104,12 @@ void UCam::doStartup()
           
     pcSerial.printf("\r\n\n\nucam running!\r\n");
     
-	// When running on desktop over USB serial cable, this baud rate seems to need to match the rate set in the USB device configuration (via Control Panel/System/Device Manager/Properties/Advanced)
+    // When running on desktop over USB serial cable, this baud rate seems to need to match the rate set in the USB device configuration (via Control Panel/System/Device Manager/Properties/Advanced)
 #ifdef ON_DESKTOP
-	camSerial.baud(14400);  // lowest supported rate
+    camSerial.baud(14400);  // lowest supported rate
     
 #else
-	//camSerial.baud(14400);  // lowest supported rate
+    //camSerial.baud(14400);  // lowest supported rate
     
     camSerial.baud(57600);   
     
@@ -127,103 +127,103 @@ void UCam::doStartup()
 
      myled1 = 0;
 
-	 pcSerial.printf("doStartup finished\r\n");
+     pcSerial.printf("doStartup finished\r\n");
 }
 
 int UCam::doConfig( bool raw, uint8_t colourType, uint8_t imageSize )
 {   
     myled2 = 1;
 
-	m_raw = raw;
-	m_colourType = colourType;
-	m_imageSize = imageSize;
+    m_raw = raw;
+    m_colourType = colourType;
+    m_imageSize = imageSize;
 
-	// defaults
-	uint8_t rawSize = UCAM_RAW_SIZE_80x60;
-	uint8_t jpegSize = UCAM_JPEG_SIZE_80x64;
+    // defaults
+    uint8_t rawSize = UCAM_RAW_SIZE_80x60;
+    uint8_t jpegSize = UCAM_JPEG_SIZE_80x64;
 
   
-	if( m_raw )
-	{
-		switch( m_imageSize )
-		{
-			// Sizes for raw images
-		case UCAM_RAW_SIZE_80x60:
-			rawSize = m_imageSize;
-			m_width = 80;
-			m_height = 60;
-			break;
+    if( m_raw )
+    {
+        switch( m_imageSize )
+        {
+            // Sizes for raw images
+        case UCAM_RAW_SIZE_80x60:
+            rawSize = m_imageSize;
+            m_width = 80;
+            m_height = 60;
+            break;
 
-		case UCAM_RAW_SIZE_160x120:
-			rawSize = m_imageSize;
-			m_width = 160;
-			m_height = 120;
-			break;
+        case UCAM_RAW_SIZE_160x120:
+            rawSize = m_imageSize;
+            m_width = 160;
+            m_height = 120;
+            break;
 
-		case UCAM_RAW_SIZE_320x240:
-			rawSize = m_imageSize;
-			m_width = 320;
-			m_height = 240;
-			break;
+        case UCAM_RAW_SIZE_320x240:
+            rawSize = m_imageSize;
+            m_width = 320;
+            m_height = 240;
+            break;
 
-		case UCAM_RAW_SIZE_640x480:
-			rawSize = m_imageSize;
-			m_width = 640;
-			m_height = 480;
-			break;
+        case UCAM_RAW_SIZE_640x480:
+            rawSize = m_imageSize;
+            m_width = 640;
+            m_height = 480;
+            break;
 
-		case UCAM_RAW_SIZE_128x128:
-			rawSize = m_imageSize;
-			m_width = 128;
-			m_height = 128;
-			break;
+        case UCAM_RAW_SIZE_128x128:
+            rawSize = m_imageSize;
+            m_width = 128;
+            m_height = 128;
+            break;
 
-		case UCAM_RAW_SIZE_128x96:
-		default:
-			rawSize = m_imageSize;
-			m_width = 128;
-			m_height = 96;
-			break;
-		}
-	}
-	else
-	{
-		// not raw - must be jpeg
-		switch( m_imageSize )
-		{
-	
+        case UCAM_RAW_SIZE_128x96:
+        default:
+            rawSize = m_imageSize;
+            m_width = 128;
+            m_height = 96;
+            break;
+        }
+    }
+    else
+    {
+        // not raw - must be jpeg
+        switch( m_imageSize )
+        {
+    
 
-		case UCAM_JPEG_SIZE_80x64:
-			jpegSize = m_imageSize;
-			m_width = 80;
-			m_height = 64;
-			break;
+        case UCAM_JPEG_SIZE_80x64:
+            jpegSize = m_imageSize;
+            m_width = 80;
+            m_height = 64;
+            break;
 
-		case UCAM_JPEG_SIZE_160x128:
-			jpegSize = m_imageSize;
-			m_width = 160;
-			m_height = 128;
-			break;
+        case UCAM_JPEG_SIZE_160x128:
+            jpegSize = m_imageSize;
+            m_width = 160;
+            m_height = 128;
+            break;
 
-		case UCAM_JPEG_SIZE_320x240:
-			jpegSize = m_imageSize;
-			m_width = 320;
-			m_height = 240;
-			break;
+        case UCAM_JPEG_SIZE_320x240:
+            jpegSize = m_imageSize;
+            m_width = 320;
+            m_height = 240;
+            break;
 
-		case UCAM_JPEG_SIZE_640x480:
-		default:
-			jpegSize = m_imageSize;
-			m_width = 640;
-			m_height = 480;
-			break;
+        case UCAM_JPEG_SIZE_640x480:
+        default:
+            jpegSize = m_imageSize;
+            m_width = 640;
+            m_height = 480;
+            break;
 
-		}
+        }
 
 
-		
+        
 
-	}
+    }
 
 
     // pcSerial.printf("sending INITIAL\r\n");
@@ -232,17 +232,17 @@ int UCam::doConfig( bool raw, uint8_t colourType, uint8_t imageSize )
                                 colourType,     // colour type - 07 for jpg
                                 rawSize,     // raw resolution
                                 jpegSize  ))  // jpeg resolution - 05 for 320x240
-		return 0;                                
+        return 0;                                
     
     // pcSerial.printf("sending package size\r\n");
 
 
-	// package size is only relevant for jpeg transfers
+    // package size is only relevant for jpeg transfers
     if( ! doCommand( UCAM_SET_PACKAGE_SIZE, 0x08, 
                                         0x00,     // low byte of size
                                         0x02,     // high byte of size
                                         0x00 )) 
-		return 0;
+        return 0;
   
 
   myled2 = 0;
@@ -252,56 +252,56 @@ int UCam::doConfig( bool raw, uint8_t colourType, uint8_t imageSize )
 
 int UCam::fixConfusion()
 {
-	if( ! m_confused )
-		return 1;
+    if( ! m_confused )
+        return 1;
 
-	pcSerial.printf("fixConfusion - confused\r\n");
-	for( int i = 0; i < 10; i ++ )
-	{
-		// drain pending bytes
-		pcSerial.printf("fixConfusion - draining\r\n");
-		while( camSerial.readable())
-		    uint8_t a = camSerial.getc();
-		
-		// reset
-		pcSerial.printf("fixConfusion - resetting\r\n");
+    pcSerial.printf("fixConfusion - confused\r\n");
+    for( int i = 0; i < 10; i ++ )
+    {
+        // drain pending bytes
+        pcSerial.printf("fixConfusion - draining\r\n");
+        while( camSerial.readable())
+            uint8_t a = camSerial.getc();
+        
+        // reset
+        pcSerial.printf("fixConfusion - resetting\r\n");
 
-		if( doReset())
-		{
-		    wait( 0.5 );
-		// re-sync 
-			if( doSyncs())
-			{
+        if( doReset())
+        {
+            wait( 0.5 );
+        // re-sync 
+            if( doSyncs())
+            {
 
-				// re-config
-				pcSerial.printf("fixConfusion - configuring\r\n");
+                // re-config
+                pcSerial.printf("fixConfusion - configuring\r\n");
 
-				if( doConfig( m_raw, m_colourType, m_imageSize ))
-				{
-					pcSerial.printf("fixConfusion - success\r\n");
+                if( doConfig( m_raw, m_colourType, m_imageSize ))
+                {
+                    pcSerial.printf("fixConfusion - success\r\n");
 
-					m_confused = 0;
-					return 1;
-				}
-			}
+                    m_confused = 0;
+                    return 1;
+                }
+            }
 
-		}
+        }
 
-		pcSerial.printf("fixConfusion - trying again...\r\n");
+        pcSerial.printf("fixConfusion - trying again...\r\n");
 
-	}
-	
-	pcSerial.printf("fixConfusion - giving up\r\n");
+    }
+    
+    pcSerial.printf("fixConfusion - giving up\r\n");
 
-	m_confused = 1;
-	return 0;
+    m_confused = 1;
+    return 0;
 
 }
 
 Frame* UCam::doGetRawPictureToBuffer( uint8_t pictureType )
 {
-	if( ! fixConfusion())
-		return NULL;
+    if( ! fixConfusion())
+        return NULL;
 
 
     if( pictureType == UCAM_PIC_TYPE_SNAPSHOT )
@@ -312,67 +312,67 @@ Frame* UCam::doGetRawPictureToBuffer( uint8_t pictureType )
      myled3 = 1;
 
     if( ! doCommand( UCAM_GET_PICTURE,   pictureType, 0x00, 0x00, 0x00 ))
-		return 0;
+        return 0;
     
          
     uint32_t totalBytes = readData();
 
-	if( totalBytes < 1 )
-	{
-    	 pcSerial.printf("totalBytes < 1 - giving up\r\n");
-		return 0;
+    if( totalBytes < 1 )
+    {
+         pcSerial.printf("totalBytes < 1 - giving up\r\n");
+        return 0;
     }
     
-	Frame *frame;
-	Frame::allocFrame( &frame, m_colourType, m_width, m_height, totalBytes );
+    Frame *frame;
+    Frame::allocFrame( &frame, m_colourType, m_width, m_height, totalBytes );
 
-	uint8_t *rawBuffer = frame->m_pixels;
+    uint8_t *rawBuffer = frame->m_pixels;
 
     
     uint32_t actuallyRead = readBytes( rawBuffer, totalBytes );
 
-	////pcSerial.printf("...read\r\n");
+    ////pcSerial.printf("...read\r\n");
 
-	sendAckForRawData();
+    sendAckForRawData();
 
-	if( actuallyRead < totalBytes )
-	{
-		Frame::releaseFrame( &frame );
-	    pcSerial.printf("Not enough bytes - %d  < %d \r\n", (int) actuallyRead, (int) totalBytes );
-		return NULL;
-	}
+    if( actuallyRead < totalBytes )
+    {
+        Frame::releaseFrame( &frame );
+        pcSerial.printf("Not enough bytes - %d  < %d \r\n", (int) actuallyRead, (int) totalBytes );
+        return NULL;
+    }
 
     
     pcSerial.printf("Done!\r\n");
      
     myled3 = 0;
-	
+    
     return frame;
  }
 
 
 int UCam::doConnect()
 {
-	while( true )
-	{
-		if( doSyncs())
-		{
-			break;
-		}
-		else
-		{
-			m_confused = true;
-			if( fixConfusion())
-				break;
-		}
-	}
+    while( true )
+    {
+        if( doSyncs())
+        {
+            break;
+        }
+        else
+        {
+            m_confused = true;
+            if( fixConfusion())
+                break;
+        }
+    }
 
-	return 1;
+    return 1;
 }
 
 int UCam::doSyncs()
 {
-	int i = 0;
+    int i = 0;
 
     while( true )
     {
@@ -393,13 +393,13 @@ int UCam::doSyncs()
                 break;
         }
 
-		if( i ++ > 10 )
-			return 0;
+        if( i ++ > 10 )
+            return 0;
         
     }
     
     if( ! readSync())
-		return 0;
+        return 0;
     
     myled1 = 1;
 
@@ -432,10 +432,10 @@ int UCam::doCommand( int command, int p1, int p2, int p3, int p4 )
 int UCam::doReset()
 {
     return doCommand( UCAM_RESET, 
-						0x00,		// 0x00 reboots camera
-						//0x01,		// 0x01 resets state machines, does not reboot camera
-						0x00, 0x00, 
-						0xFF );		// FF causes a 'special reset' 
+                        0x00,        // 0x00 reboots camera
+                        //0x01,        // 0x01 resets state machines, does not reboot camera
+                        0x00, 0x00, 
+                        0xFF );        // FF causes a 'special reset' 
 }
 
 int UCam::doSnapshot( uint8_t snapshotType )
@@ -472,7 +472,7 @@ int UCam::readAck( uint16_t command )
         pcSerial.printf("ack read %x  %x %x %x %x %x \r\n", (int) bytes[0], (int) bytes[1], (int) bytes[2], (int) bytes[3], (int) bytes[4], bytes[5] );
    
        pcSerial.printf("ack is for wrong command! Should be for %x\r\n", (int) command);
-		m_confused = 1;
+        m_confused = 1;
         return 0;
     }
 
@@ -508,7 +508,7 @@ int UCam::readAckPatiently( uint16_t command )
     if( a != 0xaa ||  bytes[1] != (command & 0xff))
     {
         pcSerial.printf("ackPatiently is for wrong command! Should be for %x\r\n", (int) command);
-		m_confused = 1;
+        m_confused = 1;
         return 0;
     }
 
@@ -524,11 +524,11 @@ int UCam::readSync()
      // check content
 
     
-	if( bytes[0] != 0xAA || bytes[1] != 0x0D || bytes[2] != 0x00 || bytes[3] != 0x00 || bytes[4] != 0x00 || bytes[5] != 0x00 )
-	{
-		pcSerial.printf("sync is wrong - %x %x %x %x %x %x \r\n", (int) bytes[0], (int) bytes[1], (int) bytes[2], (int) bytes[3], (int) bytes[4], (int) bytes[5] );
-		m_confused = 1;
-		return 0;
+    if( bytes[0] != 0xAA || bytes[1] != 0x0D || bytes[2] != 0x00 || bytes[3] != 0x00 || bytes[4] != 0x00 || bytes[5] != 0x00 )
+    {
+        pcSerial.printf("sync is wrong - %x %x %x %x %x %x \r\n", (int) bytes[0], (int) bytes[1], (int) bytes[2], (int) bytes[3], (int) bytes[4], (int) bytes[5] );
+        m_confused = 1;
+        return 0;
     }
     return 1;
 }
@@ -559,10 +559,10 @@ int UCam::readBytes(uint8_t *bytes, int size )
     {
         uint16_t c =  timedGetc();
         if( c == 0x1000 ) // timeout
-		{
-			m_confused = 1;
+        {
+            m_confused = 1;
             break;
-		}
+        }
             
         bytes[n] = (uint8_t) c;
         n ++;
@@ -601,10 +601,10 @@ uint16_t UCam::timedGetc()
 
 int UCam::doGetJpegPictureToFile( uint8_t pictureType, char*filename )
 {
-	if( ! fixConfusion())
-		return NULL;
+    if( ! fixConfusion())
+        return NULL;
 
-	if( pictureType == UCAM_PIC_TYPE_SNAPSHOT )
+    if( pictureType == UCAM_PIC_TYPE_SNAPSHOT )
         doSnapshot( UCAM_SNAPSHOT_JPEG );
 
     FILE *jpgFile = fopen(filename, FILE_WRITE_STRING); // "w" or "wb" for Windows
@@ -701,7 +701,7 @@ int UCam::readPackage( FILE *jpgFile, uint16_t targetPackage )
     {
         pcSerial.printf("bad dataSize  %d in package header for id %d - giving up\r\n", dataSize, packageId);
         m_confused = 1;
-		return -1;
+        return -1;
     }
         
     // image data (package size - 6 bytes)
@@ -716,7 +716,7 @@ int UCam::readPackage( FILE *jpgFile, uint16_t targetPackage )
         pcSerial.printf("bad readBytes, read %d\r\n", actuallyRead);
         for( int i = 0 ; i < actuallyRead; i ++ )
             pcSerial.printf("%x\r\n", packageBody[i]);
-		m_confused = 1;
+        m_confused = 1;
         return -1;
     }
         
@@ -740,9 +740,9 @@ uint32_t UCam::readData()
     uint8_t bytes[6];
     
     if( 6 != readBytes( bytes, 6))
-	{
+    {
         pcSerial.printf("readData failed to read 6 bytes\r\n");
-		m_confused = 1;
+        m_confused = 1;
         return 0;
     }
 
@@ -756,9 +756,9 @@ uint32_t UCam::readData()
     if( bytes[0] != 0xAA || bytes[1] != 0x0A)
     {
         pcSerial.printf("readData totalSize %d - read %x %x %x %x %x %x \r\n", (int) totalSize, (int) bytes[0], (int) bytes[1], (int) bytes[2], (int) bytes[3], (int) bytes[4], (int) bytes[5] );
-		
+        
          pcSerial.printf("readData failed\r\n");
-		 m_confused = 1;
+         m_confused = 1;
          return 0;
     }
         

@@ -7,19 +7,23 @@ class Frame;
 class MotionFinder
 {
 public:
-	MotionFinder( ServoMinder *xServoMinder, ServoMinder *yServoMinder  );
+    MotionFinder( ServoMinder *xServoMinder, ServoMinder *yServoMinder  );
 
-	void processFrame( Frame *frame );
-	void newBackground( Frame *frame );
+    void processFrame( Frame *frame );
+    void newBackground( Frame *frame );
 
-	~MotionFinder();
+    ~MotionFinder();
 
 
-	Frame *m_backgroundFrame;
-	Frame *m_resultFrame;
-	uint16_t m_delta;
+    Frame *m_backgroundFrame;
+    Frame *m_resultFrame;
+    uint16_t m_delta;
 
-	ServoMinder *m_xServoMinder;
-	ServoMinder *m_yServoMinder;
+    float m_attentionX;
+    float m_attentionY;
+
+    
+    ServoMinder *m_xServoMinder;
+    ServoMinder *m_yServoMinder;
 
 };

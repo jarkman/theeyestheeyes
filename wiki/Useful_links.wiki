@@ -1,0 +1,4 @@
+#summary Page of useful links, research etc...
+
+= Details =
+Society of robots article on computer vision techniques... very little maths! http://www.societyofrobots.com/programming_computer_vision_tutorial_pt3.shtml

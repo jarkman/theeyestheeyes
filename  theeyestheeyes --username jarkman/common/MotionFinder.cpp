@@ -17,45 +17,54 @@ extern Logger pcSerial;
 
 MotionFinder::MotionFinder( ServoMinder *xServoMinder, ServoMinder *yServoMinder )
 {
-	m_backgroundFrame = NULL;
-	m_resultFrame = NULL;
+    m_backgroundFrame = NULL;
+    m_resultFrame = NULL;
+    m_attentionX = 0.5;
+    m_attentionY = 0.5;
 
-	m_xServoMinder = xServoMinder;
-	m_yServoMinder = yServoMinder;
-	
-	 m_xServoMinder->moveTo( 1.0 );
+
+
+    m_xServoMinder = xServoMinder;
+    m_yServoMinder = yServoMinder;
+    
+    m_xServoMinder->moveTo( 1.0 );
     wait( 1 );
     m_xServoMinder->moveTo( 0.0 );
     wait( 1 );
+    m_xServoMinder->moveTo( 0.5 );
+    wait( 1 );
+
     m_yServoMinder->moveTo( 1.0 );
     wait( 1 );
     m_yServoMinder->moveTo( 0.0 );
     wait( 1 );
+    m_yServoMinder->moveTo( 0.5 );
+    wait( 1 );
 }
 
-	
+    
 
 MotionFinder::~MotionFinder()
 {
-	if( m_backgroundFrame != NULL )
-		Frame::releaseFrame( & m_backgroundFrame );
+    if( m_backgroundFrame != NULL )
+        Frame::releaseFrame( & m_backgroundFrame );
 
-	if( m_resultFrame != NULL )
-		Frame::releaseFrame( & m_resultFrame );
+    if( m_resultFrame != NULL )
+        Frame::releaseFrame( & m_resultFrame );
 
 }
 
 void MotionFinder::newBackground( Frame *frame )
 {
-	Frame::releaseFrame( & m_backgroundFrame );
-	return processFrame( frame );
+    Frame::releaseFrame( & m_backgroundFrame );
+    return processFrame( frame );
 }
 
 void MotionFinder::processFrame( Frame *frame )
 {
-	if( frame == NULL )
+    if( frame == NULL )
     {
-		m_resultFrame->m_bad = false;
+        m_resultFrame->m_bad = false;
         return;
     }
 
@@ -64,19 +73,19 @@ void MotionFinder::processFrame( Frame *frame )
     {
         m_backgroundFrame = frame;
 
-		m_delta = 1 << (m_backgroundFrame->m_bitsPerPixel - 4); // smallest interesting change - make sure this is nonzero for 4-bit iamges!
+        m_delta = 1 << (m_backgroundFrame->m_bitsPerPixel - 4); // smallest interesting change - make sure this is nonzero for 4-bit iamges!
 
-		if( m_delta < 2 )
-			m_delta = 2;
+        if( m_delta < 2 )
+            m_delta = 2;
 
         Frame::cloneFrame( &m_resultFrame, m_backgroundFrame );
-		m_resultFrame->m_bad = false;
+        m_resultFrame->m_bad = false;
         return;
     }
 
-	if( frame->m_numPixels != m_backgroundFrame->m_numPixels )
+    if( frame->m_numPixels != m_backgroundFrame->m_numPixels )
     {       
-		m_resultFrame->m_bad = false;
+        m_resultFrame->m_bad = false;
         return;
     }
 
@@ -127,8 +136,8 @@ void MotionFinder::processFrame( Frame *frame )
     uint32_t cogX = 0;
     uint32_t cogY = 0;
 
-	if( frame->m_numPixels < 1 )
-		frame->m_numPixels = 1;
+    if( frame->m_numPixels < 1 )
+        frame->m_numPixels = 1;
 
     uint32_t percentage = (sumN * 100) / frame->m_numPixels;
     
@@ -137,24 +146,29 @@ void MotionFinder::processFrame( Frame *frame )
     if( percentage < 3 ) // no real target, no COG
     {
         pcSerial.printf("No COG\r\n");
+        
+       // could implement some looking-around in this state
+
     }
     else if( sumN > 0 )
     {
         cogX = sumX / sumN;
         cogY = sumY / sumN;
 
-		m_xServoMinder->moveTo( (float)cogX  / frame->m_width);
-		m_yServoMinder->moveTo( (float)cogY  / frame->m_width); // use the larger dimension so x & y get the same scaling
-
+        m_attentionX = ((float)cogX  / frame->m_width);
+        m_attentionY = ((float)cogY  / frame->m_width); // use the larger dimension so x & y get the same scaling
 
         pcSerial.printf("COG is %d, %d\r\n", (int) cogX, (int) cogY);
 
     }
 
+    m_xServoMinder->moveTo( 1 - m_attentionX );
+    m_yServoMinder->moveTo( 1 - m_attentionY ); 
+
 
     Frame::releaseFrame( &frame );
 
-	m_resultFrame->m_bad = false;
+    m_resultFrame->m_bad = false;
     return;
 }
 

@@ -3,9 +3,10 @@
 Work items for theeyestheeyes
 ==============================
 
-
-R - do cheap smooth servo motion
-R - build skull demo rig with x & y for PMS demo
+R - run mbed off the servo battery supply
+R - add acceleration/deceleration to motion control
+R - fix camera reset handling so it recovers after the mbed is reset
+R - use interrupt-driven serial lib when available (or write a timer-based one) and then increase the camera baud rate
 
 B - de-speckle
 B - blob detect

@@ -62,9 +62,10 @@ void MotionFinder::newBackground( Frame *frame )
 
 void MotionFinder::processFrame( Frame *frame )
 {
-    if( frame == NULL )
+    if( frame == NULL || frame->m_bad )
     {
-        m_resultFrame->m_bad = false;
+        if( m_resultFrame != NULL )
+			m_resultFrame->m_bad = false;
         return;
     }
 

@@ -24,7 +24,7 @@ DigitalOut myled4(LED4);
 
 //LocalFileSystem local("local");
 UCam ucam(p13, p14);
-Timer t;
+
 
 
 Servo xServo (p21);
@@ -69,6 +69,7 @@ Frame* UCamGetDiff( )
     
     Frame *frame = ucam.doGetRawPictureToBuffer( UCAM_PIC_TYPE_RAW_PREVIEW );
 
+
     motionFinder->processFrame( frame );  // returns a frame which the caller must *not* release
 
     return motionFinder->m_resultFrame;  
@@ -81,6 +82,7 @@ Frame* UCamResetDiff( )
   
     Frame *frame = ucam.doGetRawPictureToBuffer( UCAM_PIC_TYPE_RAW_PREVIEW );
 
+    
     motionFinder->newBackground( frame ); 
 
     return motionFinder->m_resultFrame; // returns a frame which the caller must *not* release
@@ -92,6 +94,7 @@ UCam::UCam( PinName tx, PinName    rx ) : camSerial(p13, p14) // tx, rx
 {
     lastCommand = 0;
     m_confused = 0;
+    m_colourType = UCAM_COLOUR_NOT_SET;
 
 }
 
@@ -118,6 +121,11 @@ void UCam::doStartup()
 
      myled1 = 1;
      
+     // drain pending bytes
+     pcSerial.printf("doStartup - draining\r\n");
+     while( camSerial.readable())
+        uint8_t a = camSerial.getc();
+        
      doConnect();
 
     
@@ -226,7 +234,7 @@ int UCam::doConfig( bool raw, uint8_t colourType, uint8_t imageSize )
     }
 
 
-    // pcSerial.printf("sending INITIAL\r\n");
+    pcSerial.printf("doConfig sending INITIAL %x %x %x\r\n", colourType, rawSize, jpegSize );
 
     if( ! doCommand( UCAM_INITIAL, 0x00, 
                                 colourType,     // colour type - 07 for jpg
@@ -234,7 +242,7 @@ int UCam::doConfig( bool raw, uint8_t colourType, uint8_t imageSize )
                                 jpegSize  ))  // jpeg resolution - 05 for 320x240
         return 0;                                
     
-    // pcSerial.printf("sending package size\r\n");
+    pcSerial.printf("sending package size\r\n");
 
 
     // package size is only relevant for jpeg transfers
@@ -274,9 +282,9 @@ int UCam::fixConfusion()
             {
 
                 // re-config
-                pcSerial.printf("fixConfusion - configuring\r\n");
 
-                if( doConfig( m_raw, m_colourType, m_imageSize ))
+                if(  m_colourType == UCAM_COLOUR_NOT_SET ||      // for when we are confused before we have done any config
+                     doConfig( m_raw, m_colourType, m_imageSize ))  // for when we are confused after config, so ought to restore it
                 {
                     pcSerial.printf("fixConfusion - success\r\n");
 
@@ -312,31 +320,46 @@ Frame* UCam::doGetRawPictureToBuffer( uint8_t pictureType )
      myled3 = 1;
 
     if( ! doCommand( UCAM_GET_PICTURE,   pictureType, 0x00, 0x00, 0x00 ))
+    {
+        m_confused = 1;
+        pcSerial.printf("failed GET_PICTURE - giving up\r\n");
         return 0;
-    
+     }
+
+
          
     uint32_t totalBytes = readData();
 
     if( totalBytes < 1 )
     {
-         pcSerial.printf("totalBytes < 1 - giving up\r\n");
+        m_confused = 1;
+        pcSerial.printf("totalBytes < 1 - giving up\r\n");
+        return 0;
+    }
+
+ 
+    Frame *frame = NULL;
+    Frame::allocFrame( &frame, m_colourType, m_width, m_height, totalBytes );
+
+    if( frame == NULL || frame->m_bad )
+    {
+         m_confused = 1;
+         pcSerial.printf("doGetRawPictureToBuffer - bad frame - giving up\r\n");
         return 0;
     }
     
-    Frame *frame;
-    Frame::allocFrame( &frame, m_colourType, m_width, m_height, totalBytes );
-
     uint8_t *rawBuffer = frame->m_pixels;
-
-    
+  
+ 
     uint32_t actuallyRead = readBytes( rawBuffer, totalBytes );
 
-    ////pcSerial.printf("...read\r\n");
 
+ 
     sendAckForRawData();
 
     if( actuallyRead < totalBytes )
     {
+        m_confused = 1;
         Frame::releaseFrame( &frame );
         pcSerial.printf("Not enough bytes - %d  < %d \r\n", (int) actuallyRead, (int) totalBytes );
         return NULL;
@@ -435,7 +458,10 @@ int UCam::doReset()
                         0x00,        // 0x00 reboots camera
                         //0x01,        // 0x01 resets state machines, does not reboot camera
                         0x00, 0x00, 
-                        0xFF );        // FF causes a 'special reset' 
+                        0xFF );        // 00 is a regular reset, FF causes a 'special reset' which is more immediate
+                
+                
+     
 }
 
 int UCam::doSnapshot( uint8_t snapshotType )
@@ -471,7 +497,10 @@ int UCam::readAck( uint16_t command )
     {
         pcSerial.printf("ack read %x  %x %x %x %x %x \r\n", (int) bytes[0], (int) bytes[1], (int) bytes[2], (int) bytes[3], (int) bytes[4], bytes[5] );
    
-       pcSerial.printf("ack is for wrong command! Should be for %x\r\n", (int) command);
+        if( bytes[1] == 0x0f )
+           pcSerial.printf("ack is a NAK, error code %x for command %x\r\n", (int) bytes[4], (int) command);
+        else         
+           pcSerial.printf("ack is for wrong command! Should be for %x\r\n", (int) command);
         m_confused = 1;
         return 0;
     }
@@ -503,13 +532,18 @@ int UCam::readAckPatiently( uint16_t command )
     
     readBytes( bytes, 5);
     
-    pcSerial.printf("ackPatiently read %x  %x %x %x %x %x \r\n", (int) a, (int) bytes[0], (int) bytes[1], (int) bytes[2], (int) bytes[3], (int) bytes[4] );
    
     if( a != 0xaa ||  bytes[1] != (command & 0xff))
     {
+        pcSerial.printf("ackPatiently read %x  %x %x %x %x %x \r\n", (int) a, (int) bytes[0], (int) bytes[1], (int) bytes[2], (int) bytes[3], (int) bytes[4] );
+
         pcSerial.printf("ackPatiently is for wrong command! Should be for %x\r\n", (int) command);
         m_confused = 1;
         return 0;
+    }
+    else
+    {
+        pcSerial.printf("ackPatiently is good!\r\n");
     }
 
     return 1;
@@ -561,6 +595,16 @@ int UCam::readBytes(uint8_t *bytes, int size )
         if( c == 0x1000 ) // timeout
         {
             m_confused = 1;
+            int m = n;
+            
+            // put some zeroes in the output to make clear it's empty
+            do
+            {
+                 bytes[m] = (uint8_t) 0;
+                    m ++;
+             }
+             while( m < size && m < 20 ); 
+             
             break;
         }
             
@@ -576,7 +620,7 @@ uint16_t UCam::timedGetc()
 {
     //return camSerial.getc();
 
-   
+    Timer t;
     t.start();
     do
     {

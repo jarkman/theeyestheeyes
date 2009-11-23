@@ -17,17 +17,45 @@ void wait_ms(int ms)
 	Sleep( ms );
 }
 
-void Timer::start()
+
+uint32_t timeInMillis()
 {
-	startTime = time(NULL);
+	CTime tim = CTime::GetCurrentTime();
+	SYSTEMTIME sysTime;
+
+	tim.GetAsSystemTime(sysTime);
+
+	uint32_t now = (((((sysTime.wHour * 60) + sysTime.wMinute) * 60) + sysTime.wSecond) * 1000) + sysTime.wMilliseconds;
+
+	return now;
+}
+
+
+void Timer::reset()
+{
+	startTime = timeInMillis();
+}
+
+void Timer::start() // not a very good emulation, but close enough for our purposes
+{
+	startTime = timeInMillis();
 }
 
 int Timer::read_ms()
 {
-	return (int) (time(NULL) - startTime) * 1000;
+	return (int) (timeInMillis() - startTime);
 
 }
 
+
+	
+
+
+
+float Timer::read()
+{
+	return ((float)read_ms()) / 1000.0;
+}
 
 void Timer::stop()
 {
@@ -79,9 +107,9 @@ void Serial::baud( int rate )
 	
 	m_bPortReady = GetCommTimeouts (m_hCom, &m_CommTimeouts);
 
-	m_CommTimeouts.ReadIntervalTimeout = 50;
-	m_CommTimeouts.ReadTotalTimeoutConstant = 50;
-	m_CommTimeouts.ReadTotalTimeoutMultiplier = 10;
+	m_CommTimeouts.ReadIntervalTimeout = 1;
+	m_CommTimeouts.ReadTotalTimeoutConstant = 1;
+	m_CommTimeouts.ReadTotalTimeoutMultiplier = 1;
 	m_CommTimeouts.WriteTotalTimeoutConstant = 50;
 	m_CommTimeouts.WriteTotalTimeoutMultiplier = 10;
 
@@ -93,7 +121,7 @@ void Serial::baud( int rate )
 uint8_t Serial::getc()
 {
 	while( ! readable())
-		Sleep( 10 );
+		Sleep( 1 );
 
 	if( iBytesRead == 0 )
 	{

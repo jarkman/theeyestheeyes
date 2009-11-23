@@ -67,6 +67,8 @@
 
 class Frame;
 
+#include "SerialBuffered.h"
+
 class UCam
 {
 public:
@@ -98,14 +100,14 @@ private:
     uint32_t readData();
     int readBytes(uint8_t *bytes, int size );
 
-    uint16_t timedGetc();
     uint16_t readUInt16();
     int readPackage( FILE *jpgFile, uint16_t targetPackage );
 
 
 
 private:
-    Serial camSerial;
+    SerialBuffered camSerial;
+    //Serial camSerial;
     uint8_t lastCommand;
 
     int m_confused;

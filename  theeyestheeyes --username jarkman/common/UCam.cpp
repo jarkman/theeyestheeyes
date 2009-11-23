@@ -6,6 +6,8 @@
 #include "ServoMinder.h"
 #include "MotionFinder.h"
 #include "Servo.h"
+#include "SerialBuffered.h"
+
 
 // ucam protocol implementation for mbed
 
@@ -89,12 +91,14 @@ Frame* UCamResetDiff( )
     
 }
 
-UCam::UCam( PinName tx, PinName    rx ) : camSerial(p13, p14) // tx, rx
+UCam::UCam( PinName tx, PinName    rx ) : camSerial(5000, p13, p14) // tx, rx
+//UCam::UCam( PinName tx, PinName    rx ) : camSerial( p13, p14) // tx, rx
 
 {
     lastCommand = 0;
     m_confused = 0;
     m_colourType = UCAM_COLOUR_NOT_SET;
+    camSerial.setTimeout( 1.0 );
 
 }
 
@@ -114,9 +118,9 @@ void UCam::doStartup()
 #else
     //camSerial.baud(14400);  // lowest supported rate
     
-    camSerial.baud(57600);   
+    //camSerial.baud(57600);   
     
-    //camSerial.baud(115200);    // highest supported rate
+    camSerial.baud(115200);    // highest supported rate
 #endif
 
      myled1 = 1;
@@ -399,13 +403,11 @@ int UCam::doSyncs()
 
     while( true )
     {
-        pcSerial.printf("sending sync\r\n");
-
         wait( 0.5 );
         
         sendCommand( UCAM_SYNC, 0x00, 0x00, 0x00, 0x00  ); 
         
-       //// pcSerial.printf("sent sync\r\n");
+       pcSerial.printf("sent sync\r\n");
 
         
         if( camSerial.readable())
@@ -434,6 +436,7 @@ int UCam::doSyncs()
 
 void UCam::sendCommand( int command, int p1, int p2, int p3, int p4 )
 {
+
     camSerial.putc( (command >> 8) & 0xff );     
     camSerial.putc( command & 0xff );    
     camSerial.putc( p1 );
@@ -495,7 +498,7 @@ int UCam::readAck( uint16_t command )
    
     if( bytes[0] != 0xaa || bytes[1] != 0x0e || bytes[2] != (command & 0xff))
     {
-        pcSerial.printf("ack read %x  %x %x %x %x %x \r\n", (int) bytes[0], (int) bytes[1], (int) bytes[2], (int) bytes[3], (int) bytes[4], bytes[5] );
+        //pcSerial.printf("ack read %x  %x %x %x %x %x \r\n", (int) bytes[0], (int) bytes[1], (int) bytes[2], (int) bytes[3], (int) bytes[4], bytes[5] );
    
         if( bytes[1] == 0x0f )
            pcSerial.printf("ack is a NAK, error code %x for command %x\r\n", (int) bytes[4], (int) command);
@@ -535,7 +538,7 @@ int UCam::readAckPatiently( uint16_t command )
    
     if( a != 0xaa ||  bytes[1] != (command & 0xff))
     {
-        pcSerial.printf("ackPatiently read %x  %x %x %x %x %x \r\n", (int) a, (int) bytes[0], (int) bytes[1], (int) bytes[2], (int) bytes[3], (int) bytes[4] );
+        //pcSerial.printf("ackPatiently read %x  %x %x %x %x %x \r\n", (int) a, (int) bytes[0], (int) bytes[1], (int) bytes[2], (int) bytes[3], (int) bytes[4] );
 
         pcSerial.printf("ackPatiently is for wrong command! Should be for %x\r\n", (int) command);
         m_confused = 1;
@@ -588,55 +591,26 @@ uint16_t UCam::readUInt16()
 int UCam::readBytes(uint8_t *bytes, int size )
 {
 
-    int n = 0;
-    do
+    int n = camSerial.readBytes( bytes, size );
+    if( n < size )
     {
-        uint16_t c =  timedGetc();
-        if( c == 0x1000 ) // timeout
-        {
-            m_confused = 1;
-            int m = n;
+         m_confused = 1;
+         int m = n;
             
-            // put some zeroes in the output to make clear it's empty
-            do
-            {
-                 bytes[m] = (uint8_t) 0;
-                    m ++;
-             }
-             while( m < size && m < 20 ); 
+         // put some zeroes in the output to make clear it's empty
+         do
+         {
+              bytes[m] = (uint8_t) 0;
+              m ++;
+         }
+         while( m < size && m < 20 ); 
              
-            break;
-        }
-            
-        bytes[n] = (uint8_t) c;
-        n ++;
-     }
-     while( n < size );
-                
-    return n;                
-}
-
-uint16_t UCam::timedGetc()
-{
-    //return camSerial.getc();
-
-    Timer t;
-    t.start();
-    do
-    {
-        if( camSerial.readable())
-            return camSerial.getc();
-            
-        wait_ms(1);
-     }
-     while( t.read_ms() < 1000 );
-     
-     
-      pcSerial.printf("timedGetc gave up after %d ms\r\n", (int) t.read_ms());
+           
+    }
+    
+    return n;
+    
       
-      t.stop();
-     return 0x1000;
-     
 }
 
 

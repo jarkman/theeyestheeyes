@@ -20,6 +20,9 @@ public:
 	int readable();
 	void printf(char *msg, ...);
 
+	template<typename T> void attach(	T 	*	tptr,
+								void 		(T::*mptr)(void)) {};
+
 private:
 	// variables used with the com port
 BOOL     m_bPortReady;
@@ -55,8 +58,10 @@ public:
 class Timer
 {
 public:
+	void reset();
 	void start();
 	int read_ms();
+	float read();
 	void stop();
 
 	time_t startTime;
@@ -69,6 +74,7 @@ public:
 	void 		(T::*mptr)(void),
 	float 		t	) {};
 };
+
 
 #define LED1 0
 #define LED2 1
@@ -86,6 +92,7 @@ public:
 
 #define FILE_WRITE_STRING "wb"
 #define FILE_READ_STRING "rb"
+
 
 void wait( float secs );
 void wait_ms( int ms );

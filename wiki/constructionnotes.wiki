@@ -1,0 +1,29 @@
+#summary Construction notes.
+
+= Introduction =
+
+There are many ways to make eyeballs. This is a quick introduction to the parts and techniques we used.
+
+
+= Details =
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
+
+== Electronics ==
+
+There's not much to it. The parts are:
+One mbed processor (http://mbed.org)
+One serial camera module (http://www.coolcomponents.co.uk/catalog/product_info.php?cPath=45&products_id=369)
+Three servos (http://servoshop.co.uk/index.php?pid=STECENERG&area=Servo)
+One switch for the power supply
+One 4-AA-cell battery box
+
+Servos wire directly to PWM pins on the mbed. The camera wires to UART pins on the mbed. The mbed also provides a 3.3v supply to run the camera.  
+== Software ==
+
+== Mechanics ==
+
+== Case ==

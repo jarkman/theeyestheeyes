@@ -15,11 +15,11 @@ Add your content here.  Format your content with:
 == Electronics ==
 
 There's not much to it. The parts are:
-One mbed processor (http://mbed.org)
-One serial camera module (http://www.coolcomponents.co.uk/catalog/product_info.php?cPath=45&products_id=369)
-Three servos (http://servoshop.co.uk/index.php?pid=STECENERG&area=Servo)
-One switch for the power supply
-One 4-AA-cell battery box
+  * One mbed processor (http://mbed.org)
+  * One serial camera module (http://www.coolcomponents.co.uk/catalog/product_info.php?cPath=45&products_id=369)
+  * Three servos (http://servoshop.co.uk/index.php?pid=STECENERG&area=Servo)
+  * One switch for the power supply
+  * One 4-AA-cell battery box
 
 Servos wire directly to PWM pins on the mbed. The camera wires to UART pins on the mbed. The mbed also provides a 3.3v supply to run the camera.  
 == Software ==

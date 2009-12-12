@@ -4,18 +4,10 @@
 
 There are many ways to make eyeballs. This is a quick introduction to the parts and techniques we used.
 
-
-= Details =
-
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
-
 == Electronics ==
 
 There's not much to it. The parts are:
-  * One mbed processor (http://mbed.org)
+  * One mbed processor (http://mbed.org, http://uk.farnell.com/nxp/om11043/kit-mbed-prototyping-board-lpc1768/dp/1761179)
   * One serial camera module (http://www.coolcomponents.co.uk/catalog/product_info.php?cPath=45&products_id=369)
   * Three servos (http://servoshop.co.uk/index.php?pid=STECENERG&area=Servo)
   * One switch for the power supply

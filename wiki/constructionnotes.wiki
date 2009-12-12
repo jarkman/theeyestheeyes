@@ -22,8 +22,23 @@ There's not much to it. The parts are:
   * One 4-AA-cell battery box
 
 Servos wire directly to PWM pins on the mbed. The camera wires to UART pins on the mbed. The mbed also provides a 3.3v supply to run the camera.  
+
+
 == Software ==
 
+TBD 
+
+See the source for this Google Code project.
+
+
 == Mechanics ==
+
+There are only two moving parts - the eyeball and the eyelid. Two servos move the eyeball left & right and up & down, and one moves the eyelid.
+
+The ball itself is made from a Christmas ornament, a hard white plastic ball. The back of the ball is cut away, and pivot holes are drilled across a diameter. Two servos live inside the ball, providing support and positioning - see picture TBD.
+
+The upper eyelid (along with the non-moving lower eyelid) is hammered from thin copper sheet. The copper has to be annealed, then domed into a sandbag to stretch it into a curve, then hammered over a suitable former to make a spherical shell. It's easiest to make the shell oversize and then trim it back to the right shape.
+
+The eyelids have a common pivot (actually, a small woodscrew) on each side of the case. It's important to get these pivots in line with the center of the eyeball, so he clearance between lid and ball stays the same as the lids open & close. 
 
 == Case ==

@@ -49,10 +49,6 @@ size_t SerialBuffered::readBytes( uint8_t *bytes, size_t requested )
             break;
         bytes[i] = c;
         i++;
-
-		//pcSerial.printf("SerialBuffered - %d\r\n", (int) i  );
-        
-
     }
     
     return i;
@@ -122,7 +118,7 @@ void SerialBuffered::handleInterrupt()
             m_buff[ m_contentEnd ++ ] = Serial::getc();
 			
             m_contentEnd = m_contentEnd % m_buffSize;
-
+            
            
            
         }

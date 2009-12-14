@@ -7,10 +7,12 @@
 
 
 #include "ServoMinder.h"
+#include "Blinker.h"
 
 
 
 extern Logger pcSerial;
+extern Blinker *blinker;
 
 // Motion detection for the mbed
 
@@ -27,6 +29,9 @@ MotionFinder::MotionFinder( ServoMinder *xServoMinder, ServoMinder *yServoMinder
     m_xServoMinder = xServoMinder;
     m_yServoMinder = yServoMinder;
     
+   
+    
+/*
     m_xServoMinder->moveTo( 1.0 );
     wait( 1 );
     m_xServoMinder->moveTo( 0.0 );
@@ -34,12 +39,14 @@ MotionFinder::MotionFinder( ServoMinder *xServoMinder, ServoMinder *yServoMinder
     m_xServoMinder->moveTo( 0.5 );
     wait( 1 );
 
-    m_yServoMinder->moveTo( 1.0 );
+    
+    m_yServoMinder->moveTo( 0.7 );
     wait( 1 );
     m_yServoMinder->moveTo( 0.0 );
-    wait( 1 );
+    wait( 2 );
     m_yServoMinder->moveTo( 0.5 );
-    wait( 1 );
+    wait( 2 );
+    */
 }
 
     
@@ -65,7 +72,7 @@ void MotionFinder::processFrame( Frame *frame )
     if( frame == NULL || frame->m_bad )
     {
         if( m_resultFrame != NULL )
-			m_resultFrame->m_bad = false;
+            m_resultFrame->m_bad = false;
         return;
     }
 
@@ -147,24 +154,42 @@ void MotionFinder::processFrame( Frame *frame )
     if( percentage < 3 ) // no real target, no COG
     {
         pcSerial.printf("No COG\r\n");
+
+       m_xServoMinder->setSpeed( 0.02 );
+       m_yServoMinder->setSpeed( 0.02 );
+       
+        blinker->setBoredom( 1 );
         
+        m_attentionX = m_attentionX + (((0.5 - m_attentionX))/20);
+        m_attentionY = m_attentionY + (((0.7 - m_attentionY))/20);
        // could implement some looking-around in this state
+       
+
 
     }
     else if( sumN > 0 )
     {
+         m_xServoMinder->setSpeed( 0.25 );
+         m_yServoMinder->setSpeed( 0.25 );
+         
         cogX = sumX / sumN;
         cogY = sumY / sumN;
 
         m_attentionX = ((float)cogX  / frame->m_width);
         m_attentionY = ((float)cogY  / frame->m_width); // use the larger dimension so x & y get the same scaling
 
+        //blinker->setBoredom( 0 );
+        float boredom = (2*percentage)/100.0;
+        if(boredom > 1) boredom = 1;
+        blinker->setBoredom( boredom );
+
+
         pcSerial.printf("COG is %d, %d\r\n", (int) cogX, (int) cogY);
 
     }
 
     m_xServoMinder->moveTo( 1 - m_attentionX );
-    m_yServoMinder->moveTo( 1 - m_attentionY ); 
+    m_yServoMinder->moveTo(  m_attentionY ); 
 
 
     Frame::releaseFrame( &frame );

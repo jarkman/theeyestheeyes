@@ -15,12 +15,23 @@ There's not much to it. The parts are:
 
 Servos wire directly to PWM pins on the mbed. The camera wires to UART pins on the mbed. The mbed also provides a 3.3v supply to run the camera.  
 
+Specific pin wiring is:
+TBD
 
 == Software ==
 
 TBD 
 
 See the source for this Google Code project.
+
+To build it as an mbed project, you need to add the files in 'common' to a new project in the mbed compiler.
+
+The current mbed project should (in principle) also be available from this Notebook page:
+http://mbed.org/users/jarkman/notebook/ucam-serial-camera/
+
+To build the testframe for Visual Studio, you need to open UCamDemo/UCamDemo.sln.
+
+To build the testframe for XCode, you need to open MacTest/MacTest.xcodeproj (but note that at the time of writing, that testframe didn't do much).
 
 Behaviours:
   * Motion tracking

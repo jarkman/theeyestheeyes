@@ -19,9 +19,24 @@ ServoMinder::ServoMinder( Servo *servo )
     m_ticker.attach( this, &ServoMinder::tick, m_tickTime );
 }
 
+bool ServoMinder::isMoving()
+{
+    return fabs( m_servo->read() - m_target) > m_delta;
+}
+
+void ServoMinder::moveToAndWait( float target )
+{
+    moveTo( target );
+    
+    while( isMoving() )
+       wait( 0.001 ) ;
+ }
+        
 void ServoMinder::moveTo( float target )
 {
+
     m_target = target;
+
     
     
 }

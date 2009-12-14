@@ -18,8 +18,8 @@ public:
     void setTimeout( float seconds );    // maximum time in seconds that getc() should block 
                                          // while waiting for a character
                                          // Pass -1 to disable the timeout.
-
-	size_t readBytes( uint8_t *bytes, size_t requested );    // read requested bytes into a buffer, 
+    
+    size_t readBytes( uint8_t *bytes, size_t requested );    // read requested bytes into a buffer, 
                                                              // return number actually read, 
                                                              // which may be less than requested if there has been a timeout
     

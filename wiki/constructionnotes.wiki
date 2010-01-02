@@ -33,12 +33,12 @@ To build it as an mbed project, you need to add the files in 'common' to a new p
 The current mbed project should also be available from this Notebook page:
 http://mbed.org/users/jarkman/notebook/ucam-serial-camera/
 
-To build the testframe for Visual Studio, you need to open UCamDemo/UCamDemo.sln.
+To build the testframe for Visual Studio, you need to open `UCamDemo/UCamDemo.sln`.
 
-To build the testframe for XCode, you need to open MacTest/MacTest.xcodeproj (but note that at the time of writing, that testframe didn't do much).
+To build the testframe for XCode, you need to open `MacTest/MacTest.xcodeproj` (but note that at the time of writing, that testframe didn't do much).
 
 There are three main behaviours:
-  * Motion tracking (actually just the center of gravity of the different-from-background pixels in each frame - see MotionFinder::processFrame in MotionFinder.cpp)
+  * Motion tracking (actually just the center of gravity of the different-from-background pixels in each frame - see `MotionFinder::processFrame()` in `MotionFinder.cpp`)
   * Sleepiness (when less than 3 percent of the pixels have changed in each frame, the eye slowly centers and droops, and the eyelid doesn't open as wide on each blink)
   * Blinking (every 15 seconds)
 

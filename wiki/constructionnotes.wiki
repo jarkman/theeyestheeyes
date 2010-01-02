@@ -40,15 +40,35 @@ Behaviours:
 
 == Mechanics ==
 
-There are only two moving parts - the eyeball and the eyelid. Two servos move the eyeball left & right and up & down, and one moves the eyelid.
+There are only two moving parts - the eyeball and the eyelid. Two servos move the eyeball left & right (X) and up & down (Y) , and one moves the eyelid.
 
-The ball itself is made from a Christmas ornament, a hard white plastic ball. The back of the ball is cut away, and pivot holes are drilled across a diameter. Two servos live inside the ball, providing support and positioning - see picture TBD.
+Here's the servo assembly for X and Y, on its support arm:
+http://picasaweb.google.co.uk/lh/photo/oATuF0muCme48akcJK76Zw?feat=directlink
+
+The ball itself is made from a Christmas ornament, a hard white plastic ball. The back of the ball is cut away, and pivot holes are drilled across a diameter. The two servos live inside the ball:
+
+http://picasaweb.google.co.uk/lh/photo/C2YdE9dLjF6LFrIpUXXkjA?feat=directlink
 
 With a smaller ball, or bigger servos, it would be easier to mount the ball on a simple gimbal and move it with wire pushrods from servos mounted behind the ball.
 
 The upper eyelid (along with the non-moving lower eyelid) is hammered from thin copper sheet. The copper has to be annealed, then domed into a sandbag to stretch it into a curve, then hammered over a suitable former to make a spherical shell. It's easiest to make the shell oversize and then trim it back to the right shape.
 
 The eyelids have a common pivot (actually, a small woodscrew) on each side of the case. It's important to get these pivots in line with the center of the eyeball, so the clearance between lid and ball stays the same as the lids open & close. 
+
+http://picasaweb.google.co.uk/lh/photo/aVfV_FhnNEWnAVhS8RLZQQ?feat=directlink
+
+The lower lid is fixed, and the upper one is moved by a wire pushrod from a servo:
+http://picasaweb.google.co.uk/lh/photo/KBca9dj671VbqKaT-NulGQ?feat=directlink
+
+http://picasaweb.google.co.uk/lh/photo/82k8xVos1pmAZT8Gc2lcdQ?feat=directlink
+
+The eyelid takes up a suprising amount of space behind th eyeball when it opens all the way, so it's important to kepp the servo support arm low:
+http://picasaweb.google.co.uk/lh/photo/maWAsH9TL0Op1XdZtGjd4g?feat=directlink
+
+http://picasaweb.google.co.uk/lh/photo/jnG9t3oXk2HSB4EdRv8bKw?feat=directlink
+
+
+
 
 == Case ==
 
